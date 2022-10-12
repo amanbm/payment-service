@@ -35,14 +35,15 @@ impl Bitcoin for BitcoinService {
     ) -> Result<Response<BtcPaymentResponse>, Status> {
         println!("Got a request: {:?}", request);
 
+        let reply;
         let req = request.into_inner();
         let tx = req.from_addr;
         let rx = req.to_addr;
         let amount_to_send: u32 = req.amount;
 
         let mut map = HASHMAP.lock().unwrap();
-        let reply;
 
+        // sending money to self is not allowed
         if tx == rx {
             println!("sender == receiver");
             reply = BtcPaymentResponse {
@@ -53,7 +54,6 @@ impl Bitcoin for BitcoinService {
         }
 
         // make sure receiver is a valid client
-        //  we know sender must be valid client
         if !map.contains_key(&rx) {
             println!("{}: unknown receiver", tx);
             reply = BtcPaymentResponse {
@@ -63,7 +63,6 @@ impl Bitcoin for BitcoinService {
             return Ok(Response::new(reply))
         }
 
-        // check that current balance of sender if enough for amount
         let tx_current_balance = map.get(&tx).unwrap().balance;
         let rx_current_balance = map.get(&rx).unwrap().balance;
         let tx_access = map.get(&tx).unwrap().access;
@@ -71,7 +70,7 @@ impl Bitcoin for BitcoinService {
         let rx_access = map.get(&rx).unwrap().access;
         let rx_live = map.get(&rx).unwrap().live;
 
-
+        // check that current balance of sender is enough to handle request
         if tx_current_balance < amount_to_send as i32 {
             println!("{}: insufficient funds", tx);
             reply = BtcPaymentResponse {
@@ -81,20 +80,19 @@ impl Bitcoin for BitcoinService {
             return Ok(Response::new(reply))
         }
 
+        // update sender and receiver with correct balances
         let user_tx = User {
             client_id: String::from(&tx),
             balance: (tx_current_balance - amount_to_send as i32),
             access: tx_access,
             live: tx_live,
         };
-
         let user_rx = User {
             client_id: String::from(&rx),
             balance: rx_current_balance + amount_to_send as i32,
             access: rx_access,
             live:  rx_live,
         };
-
         map.insert(tx, user_tx);
         map.insert(rx, user_rx);
 
@@ -150,6 +148,7 @@ impl Bitcoin for BitcoinService {
 
         let updated_entry;
 
+        // never seen client before so must not already be online
         if !map.contains_key(&req.client_id) {
             resp_message = format!("Welcome new user {}!", req.client_id);
             println!("Welcome new user {}!", req.client_id);

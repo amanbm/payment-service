@@ -1,9 +1,11 @@
 use payments::bitcoin_client::BitcoinClient;
 use payments::{BtcBalanceRequest, BtcExitInit, BtcSignIn, BtcPaymentRequest};
 use std::io;
+use figlet_rs::FIGfont;
 
 const EXIT: u32 = 3;
 const SERVER: &str = "http://172.20.10.8:50052";
+
 
 pub mod payments {
     tonic::include_proto!("payments");
@@ -11,21 +13,36 @@ pub mod payments {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("Crypto Wallet V1.0");
+
+    let standard_font = FIGfont::standard().unwrap();
+    let figure = standard_font.convert("Payment Wallet 1.0");
+    assert!(figure.is_some());
+    println!("{}", figure.unwrap());
+
 
     // get client name
     let mut client_name_untrim = String::new();
     let mut client_name = String::new();
-    println!("Username:");
 
-    io::stdin()
-        .read_line(&mut client_name_untrim)
-        .expect("Failed to read line");
+    loop {
+        println!("Username:");
+        // sanitize input
 
-    client_name = client_name_untrim.trim().into();
+        io::stdin()
+            .read_line(&mut client_name_untrim)
+            .expect("Failed to read line");
+
+        client_name = client_name_untrim.trim().into();
+        if client_name.len() < 4 {
+            client_name_untrim.clear();
+            client_name.clear();
+            println!("Please enter username with more than 3 characters");
+            continue;
+        } 
+        break;
+    }
+
     sign_in(&mut client_name).await?;
-
-
 
     loop {
         println!("Welcome to your digital wallet");
@@ -111,12 +128,28 @@ async fn send_payment(client_name: &String) -> Result<(), Box<dyn std::error::Er
 }
 
 async fn sign_in(client_name: &String) -> Result<(), Box<dyn std::error::Error>> {
-    let mut client = BitcoinClient::connect(SERVER).await?;
+
+    // check if connection can be made
+    let mut client = BitcoinClient::connect(SERVER).await;
+    let mut client_res = loop {
+        match client {
+            Ok(res) => break res,
+            Err(_) => {
+                println!("Server seems to be down. Hit enter to retry, or Ctrl-c to exit");
+                let mut ret = String::new();
+                io::stdin()
+                    .read_line(&mut ret)
+                    .expect("Failed to read line");
+                client = BitcoinClient::connect(SERVER).await;
+            }
+        }
+    };
+
     let request = tonic::Request::new(BtcSignIn {
         client_id: String::from(client_name),
     });
 
-    let response = client.open_connection(request).await?;
+    let response = client_res.open_connection(request).await?;
     let resp = response.into_inner();
     let success = resp.successful;
     let message = resp.message;
