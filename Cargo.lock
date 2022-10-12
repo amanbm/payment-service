@@ -209,6 +209,7 @@ dependencies = [
 name = "grpc_example"
 version = "0.1.0"
 dependencies = [
+ "lazy_static",
  "prost",
  "tokio",
  "tonic",

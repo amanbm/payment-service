@@ -3,6 +3,9 @@ package payments;
 
 service Bitcoin {
     rpc SendPayment (BTCPaymentRequest) returns (BTCPaymentResponse);
+    rpc CheckBalance (BTCBalanceRequest) returns (BTCBalanceResponse);
+    rpc CloseConnection (BTCExitInit) returns (BTCExitAck);
+    rpc OpenConnection (BTCSignIn) returns (BTCSignInAck);
 }
 
 message BTCPaymentRequest {
@@ -14,4 +17,27 @@ message BTCPaymentRequest {
 message BTCPaymentResponse {
     bool   successful = 1;
     string message    = 2;
+}
+
+message BTCBalanceRequest {
+    string client_id = 1;
+}
+
+message BTCBalanceResponse {
+    int32 balance = 1;
+}
+
+message BTCExitInit {
+    string client_id = 1;
+}
+
+message BTCExitAck {}
+
+message BTCSignIn {
+    string client_id = 1;
+}
+
+message BTCSignInAck {
+    bool successful = 1;
+    string message  = 2;
 }
