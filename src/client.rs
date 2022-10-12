@@ -181,7 +181,7 @@ async fn get_balance(client_name: &String) -> Result<(), Box<dyn std::error::Err
     // definition in server.rs
     let response = client.check_balance(request).await?;
 
-    println!("you have {} bitcoins", response.into_inner().balance);
+    println!("you have {} coins", response.into_inner().balance);
 
     Ok(())
 }
