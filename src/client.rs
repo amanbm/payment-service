@@ -6,7 +6,7 @@ use std::io;
 use figlet_rs::FIGfont;
 
 const EXIT: u32 = 4;
-const SERVER: &str = "http://172.20.10.8:50052";
+const SERVER: &str = "http://169.254.190.2:50052";
 
 
 pub mod payments {
