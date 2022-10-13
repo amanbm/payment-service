@@ -50,7 +50,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     loop {
         println!("(1) check balance");
         println!("(2) transfer balance");
-        println!("(3) users");
+        println!("(3) directory");
         println!("({}) exit", EXIT);
 
         let mut option = String::new();

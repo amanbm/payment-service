@@ -43,7 +43,7 @@ impl Bitcoin for BitcoinService {
         for (client_id, _) in map.iter() {
             if String::from(client_id) == client_from {continue};
             let active: bool = map.get(client_id).unwrap().live;
-            let tmp_client = String::from(client_id) + if active { "\t\t\tactive" } else { "\t\t\tinactive"} + "\n";
+            let tmp_client = String::from(client_id) + if active { "\t\t\t\tactive" } else { "\t\t\t\tinactive"} + "\n";
 
             live_users.push_str(&tmp_client);
         }
