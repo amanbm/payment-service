@@ -4,7 +4,7 @@ use crate::user_info::User;
 use payments::bitcoin_server::{Bitcoin, BitcoinServer};
 use payments::{
     BtcBalanceRequest, BtcBalanceResponse, BtcExitAck, BtcExitInit, BtcPaymentRequest,
-    BtcPaymentResponse, BtcSignIn, BtcSignInAck,
+    BtcPaymentResponse, BtcSignIn, BtcSignInAck, LiveUsersRequest, LiveUsersResponse, 
 };
 
 use lazy_static::lazy_static;
@@ -29,6 +29,32 @@ pub struct BitcoinService {}
 
 #[tonic::async_trait]
 impl Bitcoin for BitcoinService {
+    async fn get_users(
+        &self,
+        request: Request<LiveUsersRequest>,
+    ) -> Result<Response<LiveUsersResponse>, Status> {
+        let req = request.into_inner();
+        let client_from = req.client_id;
+        println!("finding all live clients");
+
+        let mut live_users = String::new();
+        let map = HASHMAP.lock().unwrap();
+
+        for (client_id, _) in map.iter() {
+            if String::from(client_id) == client_from {continue};
+            let active: bool = map.get(client_id).unwrap().live;
+            let tmp_client = String::from(client_id) + if active { "\t\t\tactive" } else { "\t\t\tinactive"} + "\n";
+
+            live_users.push_str(&tmp_client);
+        }
+        
+        let reply = LiveUsersResponse {
+            users: String::from(live_users),
+        };
+
+        Ok(Response::new(reply))
+    }
+
     async fn send_payment(
         &self,
         request: Request<BtcPaymentRequest>,
@@ -192,7 +218,7 @@ impl Bitcoin for BitcoinService {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let addr = "169.254.190.2:50052".parse()?;
+    let addr = "172.20.10.8:50052".parse()?;
     let btc_service = BitcoinService::default();
 
     Server::builder()

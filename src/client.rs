@@ -1,10 +1,12 @@
 use payments::bitcoin_client::BitcoinClient;
-use payments::{BtcBalanceRequest, BtcExitInit, BtcSignIn, BtcPaymentRequest};
+use payments::{
+    BtcBalanceRequest, BtcSignIn, LiveUsersRequest, BtcPaymentRequest, BtcExitInit,
+};
 use std::io;
 use figlet_rs::FIGfont;
 
-const EXIT: u32 = 3;
-const SERVER: &str = "http://169.254.190.2:50052";
+const EXIT: u32 = 4;
+const SERVER: &str = "http://172.20.10.8:50052";
 
 
 pub mod payments {
@@ -15,7 +17,7 @@ pub mod payments {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let standard_font = FIGfont::standard().unwrap();
-    let figure = standard_font.convert("Payment Wallet 1.0");
+    let figure = standard_font.convert("Toy Wallet");
     assert!(figure.is_some());
     println!("{}", figure.unwrap());
 
@@ -44,10 +46,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     sign_in(&mut client_name).await?;
 
-    println!("Welcome to your digital wallet");
+    println!("This is your digital wallet");
     loop {
-        println!("(1) check your balance");
-        println!("(2) send A-coin");
+        println!("(1) check balance");
+        println!("(2) transfer balance");
+        println!("(3) users");
         println!("({}) exit", EXIT);
 
         let mut option = String::new();
@@ -68,6 +71,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
             1 => get_balance(&client_name).await?,
             2 => send_payment(&client_name).await?,
+            3 => all_users(&client_name).await?,
             _ => println!("try again"),
         }
         println!("\n");
@@ -75,10 +79,42 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
+async fn all_users(client_name: &String) -> Result<(), Box<dyn std::error::Error>> {
+    let mut client = BitcoinClient::connect(SERVER).await;
+    let mut client_res = loop {
+        match client {
+            Ok(res) => break res,
+            Err(_) => {
+                println!("Server seems to be down. Hit enter to retry, or Ctrl-c to exit");
+                let mut ret = String::new();
+                io::stdin()
+                    .read_line(&mut ret)
+                    .expect("Failed to read line");
+                client = BitcoinClient::connect(SERVER).await;
+            }
+        }
+    };
+
+    let request = tonic::Request::new(LiveUsersRequest {
+        client_id: String::from(client_name),
+    });
+
+    let response = client_res.get_users(request).await?.into_inner();
+    let users_str = response.users;
+    let len = users_str.len();
+    println!("{}", 
+        if len == 0 {
+            String::from("No other users at this time")
+        } else {
+            String::from(users_str)
+        });
+    Ok(())
+}
+
 async fn send_payment(client_name: &String) -> Result<(), Box<dyn std::error::Error>> {
     let mut client_to_send_untrim = String::new();
     let mut client_to_send = String::new();
-    println!("who would you like to send A-coin to?");
+    println!("who would you like to send coins to?");
 
     io::stdin()
         .read_line(&mut client_to_send_untrim)
@@ -129,7 +165,7 @@ async fn send_payment(client_name: &String) -> Result<(), Box<dyn std::error::Er
 
 async fn sign_in(client_name: &String) -> Result<(), Box<dyn std::error::Error>> {
 
-    // check if connection can be made
+    // check if connection can be made TODO: Refactor
     let mut client = BitcoinClient::connect(SERVER).await;
     let mut client_res = loop {
         match client {
