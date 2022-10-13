@@ -1,11 +1,12 @@
 
 <img width="504" alt="Screen Shot 2022-10-12 at 11 56 22 PM" src="https://user-images.githubusercontent.com/19520861/195523959-6df52f6f-30f9-42c3-898f-5f9a65235975.png">
 
+# Toy Wallet: gRPC based distributed payment service for CLI
+
 # Quick Start Guide
 Coming Soon!
 
-# Simple gRPC based Payment Service
-
+# Features
 Clients can log in and send money to eachother via a command line interface:
 
 server logs user activity
