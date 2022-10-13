@@ -1,7 +1,7 @@
 
 <img width="504" alt="Screen Shot 2022-10-12 at 11 56 22 PM" src="https://user-images.githubusercontent.com/19520861/195523959-6df52f6f-30f9-42c3-898f-5f9a65235975.png">
 
-# Distributed 'Toy' Payment Service
+# Distributed Payment Service
 
 - Built in Rust 
 - Can be compiled to binaries for a host of computer architectures.
