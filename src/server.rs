@@ -192,7 +192,7 @@ impl Bitcoin for BitcoinService {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let addr = "172.20.10.8:50052".parse()?;
+    let addr = "169.254.190.2:50052".parse()?;
     let btc_service = BitcoinService::default();
 
     Server::builder()
