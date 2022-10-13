@@ -1,5 +1,7 @@
 use tonic::{transport::Server, Request, Response, Status};
-
+use std::env;
+use std::io;
+use figlet_rs::FIGfont;
 use crate::user_info::User;
 use payments::bitcoin_server::{Bitcoin, BitcoinServer};
 use payments::{
@@ -218,7 +220,18 @@ impl Bitcoin for BitcoinService {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let addr = "169.254.190.2:50052".parse()?;
+    println!("IP to host server:");
+    let mut ip = String::new();
+    io::stdin()
+        .read_line(&mut ip)
+        .expect("Failed to read line");
+
+    let standard_font = FIGfont::standard().unwrap();
+    let figure = standard_font.convert("Server Log");
+    assert!(figure.is_some());
+    println!("{}", figure.unwrap());
+
+    let addr = format!("{}:50052", ip.trim()).parse()?;
     let btc_service = BitcoinService::default();
 
     Server::builder()

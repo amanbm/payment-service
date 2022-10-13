@@ -3,10 +3,11 @@ use payments::{
     BtcBalanceRequest, BtcSignIn, LiveUsersRequest, BtcPaymentRequest, BtcExitInit,
 };
 use std::io;
+use std::env;
 use figlet_rs::FIGfont;
 
 const EXIT: u32 = 4;
-const SERVER: &str = "http://169.254.190.2:50052";
+const SERVER: &str = "http://172.20.10.8:50052";
 
 
 pub mod payments {
@@ -164,7 +165,6 @@ async fn send_payment(client_name: &String) -> Result<(), Box<dyn std::error::Er
 }
 
 async fn sign_in(client_name: &String) -> Result<(), Box<dyn std::error::Error>> {
-
     // check if connection can be made TODO: Refactor
     let mut client = BitcoinClient::connect(SERVER).await;
     let mut client_res = loop {
