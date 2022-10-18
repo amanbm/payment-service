@@ -3,7 +3,6 @@ use payments::{
     BtcBalanceRequest, BtcSignIn, LiveUsersRequest, BtcPaymentRequest, BtcExitInit,
 };
 use std::io;
-use std::env;
 use figlet_rs::FIGfont;
 
 const EXIT: u32 = 4;
@@ -13,6 +12,31 @@ const SERVER: &str = "http://172.20.10.8:50052";
 pub mod payments {
     tonic::include_proto!("payments");
 }
+
+use tokio::runtime::Runtime;
+
+
+fn sync_get_balance (client_name: &String) -> Result<(), Box<dyn std::error::Error>> {
+    Runtime::new().unwrap().block_on(get_balance(&client_name))
+}
+
+fn sync_sign_in (client_name: &String) -> Result<(), Box<dyn std::error::Error>> {
+    Runtime::new().unwrap().block_on(sign_in(&client_name))
+}
+
+fn sync_send_payment (client_name: &String) -> Result<(), Box<dyn std::error::Error>> {
+    Runtime::new().unwrap().block_on(send_payment(&client_name))
+}
+
+fn sync_all_users (client_name: &String) -> Result<(), Box<dyn std::error::Error>> {
+    Runtime::new().unwrap().block_on(all_users(&client_name))
+}
+
+fn sync_close_con (client_name: &String) -> Result<(), Box<dyn std::error::Error>> {
+    Runtime::new().unwrap().block_on(close_con(&client_name))
+}
+
+
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
