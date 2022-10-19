@@ -1,5 +1,4 @@
 use tonic::{transport::Server, Request, Response, Status};
-use std::env;
 use std::io;
 use figlet_rs::FIGfont;
 use crate::user_info::User;
